@@ -1,0 +1,7 @@
+mariadb:
+  address:
+  username:
+  password:
+  database:
+  port:
+  maxConnections: 10
