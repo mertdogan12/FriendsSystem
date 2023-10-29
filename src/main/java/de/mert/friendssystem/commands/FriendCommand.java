@@ -39,12 +39,12 @@ public class FriendCommand implements CommandExecutor {
                 }
 
                 Friends friends = new Friends(p.getUniqueId());
-                if (!friends.addFriend(friend.getUniqueId())) {
-                    p.sendMessage("§cError occurred while adding you friend");
-                    return true;
-                }
-
-                p.sendMessage("§6Friend request send to §7" + args[0]);
+                friends.addFriend(friend.getUniqueId(), success -> {
+                    if (!success)
+                        p.sendMessage("§cError occurred while adding you friend");
+                    else
+                        p.sendMessage("§6Friend request send to §7" + args[1]);
+                });
                 return false;
 
             case "remove":
