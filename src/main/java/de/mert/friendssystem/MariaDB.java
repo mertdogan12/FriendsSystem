@@ -4,13 +4,18 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * MariaDB
  */
 public class MariaDB {
-    public DataSource connect() {
+    public static DataSource connect() throws SQLException, IOException {
         Settings settings = FriendsSystem.settings;
 
         Properties props = new Properties();
@@ -25,6 +30,41 @@ public class MariaDB {
 
         config.setMaximumPoolSize(settings.getMariaDBMaxConnections());
 
-        return new HikariDataSource(config);
+        DataSource source = new HikariDataSource(config);
+
+        try (Connection connection = source.getConnection()) {
+            if (!connection.isValid(1)) {
+                throw new SQLException("Could not establish database connection");
+            }
+        }
+
+        initDb(source);
+
+        return source;
+    }
+
+    private static void initDb(DataSource source) throws SQLException, IOException {
+        String setup;
+        try (InputStream in = MariaDB.class.getClassLoader().getResourceAsStream("dbsetup.sql")) {
+            assert in != null;
+            setup = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
+        }
+
+        String[] queries = setup.split(";");
+
+        for (String query : queries) {
+            if (query.trim().isEmpty())
+                continue;
+
+            try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.execute();
+            }
+        }
+    }
+
+    public static void logSQLError(String message, Exception error) {
+        FriendsSystem plugin = FriendsSystem.getPlugin(FriendsSystem.class);
+
+        plugin.getServer().getConsoleSender().sendMessage(FriendsSystem.PREFIX + message + ": " + error);
     }
 }
