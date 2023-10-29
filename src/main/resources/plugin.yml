@@ -3,3 +3,5 @@ name: FriendsSystem
 version: 1.0.0
 api-version: 1.8.8
 author: Mert Dogan
+commands:
+  friend:

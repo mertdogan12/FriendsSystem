@@ -24,8 +24,6 @@ public class FriendsSystem extends JavaPlugin {
         settings = new Settings(this);
         s.sendMessage(PREFIX + "Settings got initialized");
 
-        // Verbindet sich mit der MariaDB Datenbank
-        dataSource = new MariaDB().connect();
         // Verbindet und initialisiert die MariaDB Datenbank
         try {
             dataSource = MariaDB.connect();
@@ -36,5 +34,8 @@ public class FriendsSystem extends JavaPlugin {
             throw new RuntimeException(e);
         }
         getServer().getConsoleSender().sendMessage(PREFIX + "Successful connected to the database");
+
+        // Commands
+        getCommand("friend").setExecutor(new FriendCommand());
     }
 }
