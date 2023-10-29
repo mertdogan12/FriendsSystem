@@ -41,3 +41,4 @@ build/
 Dockerfile
 docker-compose.yml
 server
+mariadb
