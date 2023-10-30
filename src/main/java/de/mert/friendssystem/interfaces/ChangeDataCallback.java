@@ -1,5 +1,7 @@
 package de.mert.friendssystem.interfaces;
 
+import de.mert.friendssystem.Friends;
+
 public interface ChangeDataCallback {
-    void onQueryDone(boolean success);
+    void onQueryDone(Friends.Status status);
 }
