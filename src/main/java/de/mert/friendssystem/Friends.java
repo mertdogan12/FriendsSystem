@@ -27,6 +27,9 @@ public class Friends {
         SUCCESSFUL_ADDED,
         ALREADY_SEND_REQUEST,
         SUCCESSFUL_SEND,
+        SUCCESSFUL_REMOVED,
+        SUCCESSFUL_REMOVED_REQ,
+        NOT_FRIENDS,
     }
 
     public Friends(UUID uuid) {
@@ -56,7 +59,7 @@ public class Friends {
 
             if (friendRequest.get()) {
                 if (addFriend(friend))
-                    if (removeFriendRequest(friend, uuid))
+                    if (removeFriendRequest(friend, uuid).isPresent())
                         Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_ADDED));
                     else
                         Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
@@ -86,6 +89,34 @@ public class Friends {
         });
     }
 
+    public void removeFriend(UUID friend, ChangeDataCallback callback) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            Optional<Integer> rmFriend = removeFriend(friend);
+            if (!rmFriend.isPresent()) {
+                Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
+                return;
+            }
+
+            if (rmFriend.get() > 0) {
+                Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_REMOVED));
+                return;
+            }
+
+            Optional<Integer> rmFriendRequest = removeFriendRequest(friend, uuid);
+            if (!rmFriendRequest.isPresent()) {
+                Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
+                return;
+            }
+
+            if (rmFriendRequest.get() > 0) {
+                Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_REMOVED_REQ));
+                return;
+            }
+
+            Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.NOT_FRIENDS));
+        });
+    }
+
     private boolean addFriend(UUID friend) {
         try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO friends(player1, player2) VALUES(?, ?)"
@@ -98,6 +129,23 @@ public class Friends {
         } catch (SQLException e) {
             MariaDB.logSQLError("Error while adding a friend", e);
             return false;
+        }
+    }
+
+    private Optional<Integer> removeFriend(UUID friend) {
+        try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM friends WHERE player1=? AND player2=? OR player1=? AND player2=?"
+        )) {
+            stmt.setString(1, uuid.toString());
+            stmt.setString(2, friend.toString());
+            stmt.setString(3, friend.toString());
+            stmt.setString(4, uuid.toString());
+            int update = stmt.executeUpdate();
+
+            return Optional.of(update);
+        } catch (SQLException e) {
+            MariaDB.logSQLError("Error while deleting a friend request", e);
+            return Optional.empty();
         }
     }
 
@@ -116,18 +164,18 @@ public class Friends {
         }
     }
 
-    private boolean removeFriendRequest(UUID sender, UUID receiver) {
+    private Optional<Integer> removeFriendRequest(UUID sender, UUID receiver) {
         try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM requests WHERE sender=? AND receiver=?"
         )) {
             stmt.setString(1, sender.toString());
             stmt.setString(2, receiver.toString());
-            stmt.execute();
+            int update = stmt.executeUpdate();
 
-            return true;
+            return Optional.of(update);
         } catch (SQLException e) {
             MariaDB.logSQLError("Error while deleting a friend request", e);
-            return false;
+            return Optional.empty();
         }
     }
 

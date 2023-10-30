@@ -2,6 +2,7 @@ package de.mert.friendssystem.commands;
 
 import de.mert.friendssystem.Friends;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,6 +29,7 @@ public class FriendCommand implements CommandExecutor {
         }
 
         Friends friends = new Friends(p.getUniqueId());
+        OfflinePlayer friend = null;
         switch (args[0]) {
             case "add":
                 if (args.length < 2) {
@@ -40,7 +42,13 @@ public class FriendCommand implements CommandExecutor {
                     return true;
                 }
 
-                Player friend = Bukkit.getPlayer(args[1]);
+                for (OfflinePlayer pl : Bukkit.getOfflinePlayers()) {
+                    if (pl.getName().equals(args[1])) {
+                        friend = pl;
+                        break;
+                    }
+                }
+
                 if (friend == null) {
                     p.sendMessage("§cCould not find player §7" + args[1]);
                     return true;
@@ -67,6 +75,38 @@ public class FriendCommand implements CommandExecutor {
                 return false;
 
             case "remove":
+                if (args.length < 2) {
+                    p.sendMessage("§cUsage: §7/friend §f[add|remove|list] <name>");
+                    return true;
+                }
+
+                for (OfflinePlayer pl : Bukkit.getOfflinePlayers()) {
+                    if (pl.getName().equals(args[1])) {
+                        friend = pl;
+                        break;
+                    }
+                }
+
+                if (friend == null) {
+                    p.sendMessage("§cCould not find player §7" + args[1]);
+                    return true;
+                }
+
+                friends.removeFriend(friend.getUniqueId(), status -> {
+                    switch (status) {
+                        case ERROR:
+                            p.sendMessage("§cError occurred while removing your friend §7" + args[1]);
+                            return;
+                        case SUCCESSFUL_REMOVED:
+                            p.sendMessage("§6Friend " + args[1] + " removed");
+                            return;
+                        case SUCCESSFUL_REMOVED_REQ:
+                            p.sendMessage("§6Denied friend request from " + args[1]);
+                            return;
+                        case NOT_FRIENDS:
+                            p.sendMessage("§7" + args[1] + " §cis not your friend");
+                    }
+                });
                 return false;
 
             case "list":
