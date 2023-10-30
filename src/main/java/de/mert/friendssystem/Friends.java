@@ -56,7 +56,10 @@ public class Friends {
 
             if (friendRequest.get()) {
                 if (addFriend(friend))
-                    Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_ADDED));
+                    if (removeFriendRequest(friend, uuid))
+                        Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_ADDED));
+                    else
+                        Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
                 else
                     Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
 
@@ -109,6 +112,21 @@ public class Friends {
             return true;
         } catch (SQLException e) {
             MariaDB.logSQLError("Error while adding a friend request", e);
+            return false;
+        }
+    }
+
+    private boolean removeFriendRequest(UUID sender, UUID receiver) {
+        try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM requests WHERE sender=? AND receiver=?"
+        )) {
+            stmt.setString(1, sender.toString());
+            stmt.setString(2, receiver.toString());
+            stmt.execute();
+
+            return true;
+        } catch (SQLException e) {
+            MariaDB.logSQLError("Error while deleting a friend request", e);
             return false;
         }
     }

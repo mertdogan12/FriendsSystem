@@ -49,7 +49,7 @@ public class FriendCommand implements CommandExecutor {
                 friends.addFriend(friend.getUniqueId(), status -> {
                     switch (status) {
                         case ERROR:
-                            p.sendMessage("§cError occurred while adding your friend + §7" + args[1]);
+                            p.sendMessage("§cError occurred while adding your friend §7" + args[1]);
                             return;
                         case ALREADY_FRIENDS:
                             p.sendMessage("§6Already added you friend §7" + args[1]);
