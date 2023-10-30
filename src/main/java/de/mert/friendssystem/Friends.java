@@ -51,7 +51,7 @@ public class Friends {
             }
 
             // wenn req vorhanden ist wird friend geadded
-            Optional<Boolean> friendRequest = gotFriendRequest(friend, uuid);
+            Optional<Boolean> friendRequest = friendRequestExists(friend, uuid);
             if (!friendRequest.isPresent()) {
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
                 return;
@@ -70,7 +70,7 @@ public class Friends {
             }
 
             // Überprüft ob ihr eine friend req schon gesendet wurde
-            Optional<Boolean> alreadySendReq = gotFriendRequest(uuid, friend);
+            Optional<Boolean> alreadySendReq = friendRequestExists(uuid, friend);
             if (!alreadySendReq.isPresent()) {
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
                 return;
@@ -89,7 +89,7 @@ public class Friends {
         });
     }
 
-    public void removeFriend(UUID friend, ChangeDataCallback callback) {
+    public void removeFriend(UUID friend, final ChangeDataCallback callback) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             Optional<Integer> rmFriend = removeFriend(friend);
             if (!rmFriend.isPresent()) {
@@ -114,6 +114,36 @@ public class Friends {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.NOT_FRIENDS));
+        });
+    }
+
+    public void getFriends(final GetDataCallback<UUID[]> callback) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            Optional<UUID[]> result = Optional.empty();
+
+            try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT * FROM friends WHERE player1=? OR player2=?"
+            )) {
+                LinkedList<UUID> out = new LinkedList<>();
+
+                stmt.setString(1, uuid.toString());
+                stmt.setString(2, uuid.toString());
+                ResultSet resultSet = stmt.executeQuery();
+                while (resultSet.next()) {
+                    String player1 = resultSet.getString(1);
+                    String player2 = resultSet.getString(2);
+
+                    // Überprüft welcher von den beiden Spielern der Freund ist und fügt nur diesen zu Liste hinzu
+                    out.add((player1.equals(uuid.toString())) ? UUID.fromString(player2) : UUID.fromString(player1));
+                }
+
+                result = Optional.of(out.toArray(new UUID[0]));
+            } catch (SQLException e) {
+                MariaDB.logSQLError("Error while getting the friends from " + uuid, e);
+            }
+
+            final Optional<UUID[]> fresult = result;
+            Bukkit.getScheduler().runTask(plugin, () -> callback.onQuereDone(fresult));
         });
     }
 
@@ -149,6 +179,37 @@ public class Friends {
         }
     }
 
+    public void getFriendRequests(final GetDataCallback<UUID[]> callback) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            Optional<UUID[]> requests = getAllFriendRequests();
+            Bukkit.getScheduler().runTask(plugin, () -> callback.onQuereDone(requests));
+        });
+    }
+
+    public void acceptAllRequests(final ChangeDataCallback callback) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            Optional<UUID[]> requests = getAllFriendRequests();
+            if (!requests.isPresent()) {
+                Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
+                return;
+            }
+
+            for (UUID id : requests.get()) {
+                if (!addFriend(id)) {
+                    Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
+                    return;
+                }
+
+                if (!removeFriendRequest(id, uuid).isPresent()) {
+                    Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
+                    return;
+                }
+            }
+
+            Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_ADDED));
+        });
+    }
+
     private boolean sendFriendRequest(UUID friend) {
         try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO requests(sender, receiver) VALUES(?, ?)"
@@ -179,7 +240,7 @@ public class Friends {
         }
     }
 
-    private Optional<Boolean> gotFriendRequest(UUID sender, UUID receiver) {
+    private Optional<Boolean> friendRequestExists(UUID sender, UUID receiver) {
         try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
                 "SELECT * FROM requests WHERE sender=? AND receiver=?"
         )) {
@@ -190,6 +251,24 @@ public class Friends {
             return Optional.of(resultSet.next());
         } catch (SQLException e) {
             MariaDB.logSQLError("Error while checking for a friend request", e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<UUID[]> getAllFriendRequests() {
+        try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
+                "SELECT * FROM requests WHERE receiver=?"
+        )) {
+            LinkedList<UUID> out = new LinkedList<>();
+
+            stmt.setString(1, uuid.toString());
+            ResultSet resultSet = stmt.executeQuery();
+            while (resultSet.next())
+                out.add(UUID.fromString(resultSet.getString(1)));
+
+            return Optional.of(out.toArray(new UUID[0]));
+        } catch (SQLException e) {
+            MariaDB.logSQLError("Error while getting the friend requests from " + uuid, e);
             return Optional.empty();
         }
     }
@@ -209,35 +288,5 @@ public class Friends {
             MariaDB.logSQLError("Error while getting a friendship", e);
             return Optional.empty();
         }
-    }
-
-    public void getFriends(final GetDataCallback<UUID[]> callback) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            Optional<UUID[]> result = Optional.empty();
-
-            try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT * FROM friends WHERE player1=? OR player2=?"
-            )) {
-                LinkedList<UUID> out = new LinkedList<>();
-
-                stmt.setString(1, uuid.toString());
-                stmt.setString(2, uuid.toString());
-                ResultSet resultSet = stmt.executeQuery();
-                while (resultSet.next()) {
-                    String player1 = resultSet.getString(1);
-                    String player2 = resultSet.getString(2);
-
-                    // Überprüft welcher von den beiden Spielern der Freund ist und fügt nur diesen zu Liste hinzu
-                    out.add((player1.equals(uuid.toString())) ? UUID.fromString(player2) : UUID.fromString(player1));
-                }
-
-                result = Optional.of(out.toArray(new UUID[0]));
-            } catch (SQLException e) {
-                MariaDB.logSQLError("Error while getting the friends from " + uuid, e);
-            }
-
-            final Optional<UUID[]> fresult = result;
-            Bukkit.getScheduler().runTask(plugin, () -> callback.onQuereDone(fresult));
-        });
     }
 }

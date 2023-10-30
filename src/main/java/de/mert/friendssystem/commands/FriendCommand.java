@@ -1,6 +1,9 @@
 package de.mert.friendssystem.commands;
 
 import de.mert.friendssystem.Friends;
+import de.mert.friendssystem.Helper;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -8,14 +11,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
-
 /**
  * Friend Command
  */
 public class FriendCommand implements CommandExecutor {
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        final String USAGE_MESSAGE = "§cUsage: §7/friend §f[add|remove|list|requests|acceptall] <name>";
+
         if (!(sender instanceof Player)) {
             sender.sendMessage("$cCommand can only be executed by a player");
             return true;
@@ -24,7 +28,7 @@ public class FriendCommand implements CommandExecutor {
         Player p = (Player) sender;
 
         if (args.length < 1) {
-            p.sendMessage("§cUsage: §7/friend §f[add|remove|list] <name>");
+            p.sendMessage(USAGE_MESSAGE);
             return true;
         }
 
@@ -33,7 +37,7 @@ public class FriendCommand implements CommandExecutor {
         switch (args[0]) {
             case "add":
                 if (args.length < 2) {
-                    p.sendMessage("§cUsage: §7/friend §f[add|remove|list] <name>");
+                    p.sendMessage(USAGE_MESSAGE);
                     return true;
                 }
 
@@ -54,6 +58,7 @@ public class FriendCommand implements CommandExecutor {
                     return true;
                 }
 
+                OfflinePlayer fFriend = friend;
                 friends.addFriend(friend.getUniqueId(), status -> {
                     switch (status) {
                         case ERROR:
@@ -70,13 +75,28 @@ public class FriendCommand implements CommandExecutor {
                             return;
                         case SUCCESSFUL_SEND:
                             p.sendMessage("§6Sent friend request to §7" + args[1]);
+
+                            if (fFriend.isOnline()) {
+                                TextComponent message = new TextComponent("§6You got a friend request from §7" + p.getName() + " ");
+
+                                TextComponent accept = new TextComponent("§6[Accept] ");
+                                accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend add " + p.getName()));
+
+                                TextComponent deny = new TextComponent("§c[Deny]");
+                                deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend remove " + p.getName()));
+
+                                message.addExtra(accept);
+                                message.addExtra(deny);
+
+                                fFriend.getPlayer().spigot().sendMessage(message);
+                            }
                     }
                 });
                 return false;
 
             case "remove":
                 if (args.length < 2) {
-                    p.sendMessage("§cUsage: §7/friend §f[add|remove|list] <name>");
+                    p.sendMessage(USAGE_MESSAGE);
                     return true;
                 }
 
@@ -112,32 +132,47 @@ public class FriendCommand implements CommandExecutor {
             case "list":
                 friends.getFriends(result -> {
                     if (result.isPresent()) {
-                        StringBuilder builder = new StringBuilder();
-                        UUID[] data = result.get();
+                        String out = Helper.uuidArrayToPlayerNames(result.get());
 
-                        if (data.length == 0) {
+                        if (out != null) {
+                            p.sendMessage("§7" + out);
+                        } else
                             p.sendMessage("§cYou have no friends :(");
-                            return;
-                        }
 
-                        builder.append("§7");
-                        for (int i = 0; i < data.length; i++) {
-                            if (i == data.length - 1)
-                                continue;
-
-                            String name = Bukkit.getOfflinePlayer(data[i]).getName();
-                            builder.append(name).append(", ");
-                        }
-                        builder.append(Bukkit.getOfflinePlayer(data[data.length - 1]).getName());
-
-                        p.sendMessage(builder.toString());
                     } else
                         p.sendMessage("§cError occurred while getting you friends");
                 });
                 return false;
 
+            case "requests":
+                friends.getFriendRequests(result -> {
+                    if (result.isPresent()) {
+                        String out = Helper.uuidArrayToPlayerNames(result.get());
+
+                        if (out != null) {
+                            p.sendMessage("§7" + out);
+                        } else
+                            p.sendMessage("§cYou have no friends requests :(");
+
+                    } else
+                        p.sendMessage("§cError occurred while getting you friends");
+                });
+                return false;
+
+            case "acceptall":
+                friends.acceptAllRequests(status -> {
+                    switch (status) {
+                        case ERROR:
+                            p.sendMessage("§cError occurred while accepting your requests");
+
+                        case SUCCESSFUL_ADDED:
+                            p.sendMessage("§6You accepted all you friend requests");
+                    }
+                });
+                return false;
+
             default:
-                p.sendMessage("§cUsage: §7/friend §f[add|remove|list] <name>");
+                p.sendMessage(USAGE_MESSAGE);
                 return true;
         }
     }
