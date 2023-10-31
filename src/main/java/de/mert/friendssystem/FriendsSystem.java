@@ -1,7 +1,10 @@
 package de.mert.friendssystem;
 
 import de.mert.friendssystem.commands.FriendCommand;
+import de.mert.friendssystem.commands.FriendTabCompleter;
+import de.mert.friendssystem.listener.PlayerJoinListener;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.sql.DataSource;
@@ -37,5 +40,10 @@ public class FriendsSystem extends JavaPlugin {
 
         // Commands
         getCommand("friend").setExecutor(new FriendCommand());
+        PluginCommand friendCommad = getCommand("friend");
+        friendCommad.setExecutor(new FriendCommand());
+
+        // Listeners
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
     }
 }

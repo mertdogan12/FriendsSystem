@@ -18,10 +18,10 @@ public class FriendCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        final String USAGE_MESSAGE = "§cUsage: §7/friend §f[add|remove|list|requests|acceptall] <name>";
+        final String USAGE_MESSAGE = "§cUsage: §7/friend §f[ add | remove | list | requests | acceptall ] <name>";
 
         if (!(sender instanceof Player)) {
-            sender.sendMessage("$cCommand can only be executed by a player");
+            sender.sendMessage("§cCommand can only be executed by a player");
             return true;
         }
 
@@ -65,19 +65,23 @@ public class FriendCommand implements CommandExecutor {
                             p.sendMessage("§cError occurred while adding your friend §7" + args[1]);
                             return;
                         case ALREADY_FRIENDS:
-                            p.sendMessage("§6Already added you friend §7" + args[1]);
+                            p.sendMessage("Already added you friend §7" + args[1]);
                             return;
                         case SUCCESSFUL_ADDED:
                             p.sendMessage("§6Friend §7" + args[1] + " §6added");
+                            if (fFriend.isOnline()) {
+                                fFriend.getPlayer().sendMessage("§7" + p.getName() + " §6accepted you friend request");
+                            }
+
                             return;
                         case ALREADY_SEND_REQUEST:
-                            p.sendMessage("§6Already sent you friend request to §7" + args[1]);
+                            p.sendMessage("Already sent you friend request to §7" + args[1]);
                             return;
                         case SUCCESSFUL_SEND:
-                            p.sendMessage("§6Sent friend request to §7" + args[1]);
+                            p.sendMessage("Sent friend request to §7" + args[1]);
 
                             if (fFriend.isOnline()) {
-                                TextComponent message = new TextComponent("§6You got a friend request from §7" + p.getName() + " ");
+                                TextComponent message = new TextComponent("You got a friend request from §7" + p.getName() + " ");
 
                                 TextComponent accept = new TextComponent("§6[Accept] ");
                                 accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend add " + p.getName()));
@@ -118,10 +122,10 @@ public class FriendCommand implements CommandExecutor {
                             p.sendMessage("§cError occurred while removing your friend §7" + args[1]);
                             return;
                         case SUCCESSFUL_REMOVED:
-                            p.sendMessage("§6Friend " + args[1] + " removed");
+                            p.sendMessage("Friend §7" + args[1] + " §fremoved");
                             return;
                         case SUCCESSFUL_REMOVED_REQ:
-                            p.sendMessage("§6Denied friend request from " + args[1]);
+                            p.sendMessage("Denied friend request from §7" + args[1]);
                             return;
                         case NOT_FRIENDS:
                             p.sendMessage("§7" + args[1] + " §cis not your friend");
@@ -135,7 +139,7 @@ public class FriendCommand implements CommandExecutor {
                         String out = Helper.uuidArrayToPlayerNames(result.get());
 
                         if (out != null) {
-                            p.sendMessage("§7" + out);
+                            p.sendMessage("Friends: §7" + out);
                         } else
                             p.sendMessage("§cYou have no friends :(");
 
@@ -150,7 +154,7 @@ public class FriendCommand implements CommandExecutor {
                         String out = Helper.uuidArrayToPlayerNames(result.get());
 
                         if (out != null) {
-                            p.sendMessage("§7" + out);
+                            p.sendMessage("Friend requests: §7" + out);
                         } else
                             p.sendMessage("§cYou have no friends requests :(");
 
