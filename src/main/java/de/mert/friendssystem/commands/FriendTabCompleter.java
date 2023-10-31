@@ -5,9 +5,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FriendTabCompleter implements TabCompleter {
     @Override
@@ -23,20 +23,11 @@ public class FriendTabCompleter implements TabCompleter {
         };
 
         if (args.length == 1) {
-            list.sort(Comparator.comparing(s -> {
-                if (args[0].isEmpty())
-                    return 1;
-
-                if (s.length() > args[0].length())
-                    return 1;
-
-                if (s.equals(args[0].substring(0, s.length())))
-                    return 0;
-                else
-                    return 1;
-            }));
-
-            return list;
+            String input = args[0].toLowerCase();
+            return list.stream()
+                    .filter(s -> s.toLowerCase().startsWith(input))
+                    .sorted()
+                    .collect(Collectors.toList());
         } else
             return new LinkedList<String>(){
                 {
