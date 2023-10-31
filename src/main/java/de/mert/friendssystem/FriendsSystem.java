@@ -39,9 +39,9 @@ public class FriendsSystem extends JavaPlugin {
         getServer().getConsoleSender().sendMessage(PREFIX + "Successful connected to the database");
 
         // Commands
-        getCommand("friend").setExecutor(new FriendCommand());
         PluginCommand friendCommad = getCommand("friend");
         friendCommad.setExecutor(new FriendCommand());
+        friendCommad.setTabCompleter(new FriendTabCompleter());
 
         // Listeners
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
