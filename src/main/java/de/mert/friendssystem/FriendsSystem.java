@@ -2,6 +2,7 @@ package de.mert.friendssystem;
 
 import de.mert.friendssystem.commands.FriendCommand;
 import de.mert.friendssystem.commands.FriendTabCompleter;
+import de.mert.friendssystem.listener.ChatListener;
 import de.mert.friendssystem.listener.PlayerJoinListener;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
@@ -10,6 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 
 /**
  * FriendsSystem
@@ -42,8 +44,10 @@ public class FriendsSystem extends JavaPlugin {
         PluginCommand friendCommad = getCommand("friend");
         friendCommad.setExecutor(new FriendCommand());
         friendCommad.setTabCompleter(new FriendTabCompleter());
+        friendCommad.setAliases(Collections.singletonList("f"));
 
         // Listeners
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
+        getServer().getPluginManager().registerEvents(new ChatListener(), this);
     }
 }
