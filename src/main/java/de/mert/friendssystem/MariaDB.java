@@ -61,10 +61,4 @@ public class MariaDB {
             }
         }
     }
-
-    public static void logSQLError(String message, Exception error) {
-        FriendsSystem plugin = FriendsSystem.getPlugin(FriendsSystem.class);
-
-        plugin.getServer().getConsoleSender().sendMessage(FriendsSystem.PREFIX + message + ": " + error);
-    }
 }

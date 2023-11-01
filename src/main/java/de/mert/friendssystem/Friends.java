@@ -139,7 +139,7 @@ public class Friends {
 
                 result = Optional.of(out.toArray(new UUID[0]));
             } catch (SQLException e) {
-                MariaDB.logSQLError("Error while getting the friends from " + uuid, e);
+                Helper.logError("Error while getting the friends from " + uuid, e);
             }
 
             final Optional<UUID[]> fresult = result;
@@ -157,7 +157,7 @@ public class Friends {
 
             return true;
         } catch (SQLException e) {
-            MariaDB.logSQLError("Error while adding a friend", e);
+            Helper.logError("Error while adding a friend", e);
             return false;
         }
     }
@@ -174,7 +174,7 @@ public class Friends {
 
             return Optional.of(update);
         } catch (SQLException e) {
-            MariaDB.logSQLError("Error while deleting a friend request", e);
+            Helper.logError("Error while deleting a friend request", e);
             return Optional.empty();
         }
     }
@@ -220,7 +220,7 @@ public class Friends {
 
             return true;
         } catch (SQLException e) {
-            MariaDB.logSQLError("Error while adding a friend request", e);
+            Helper.logError("Error while adding a friend request", e);
             return false;
         }
     }
@@ -235,7 +235,7 @@ public class Friends {
 
             return Optional.of(update);
         } catch (SQLException e) {
-            MariaDB.logSQLError("Error while deleting a friend request", e);
+            Helper.logError("Error while deleting a friend request", e);
             return Optional.empty();
         }
     }
@@ -250,7 +250,7 @@ public class Friends {
             ResultSet resultSet = stmt.executeQuery();
             return Optional.of(resultSet.next());
         } catch (SQLException e) {
-            MariaDB.logSQLError("Error while checking for a friend request", e);
+            Helper.logError("Error while checking for a friend request", e);
             return Optional.empty();
         }
     }
@@ -268,7 +268,7 @@ public class Friends {
 
             return Optional.of(out.toArray(new UUID[0]));
         } catch (SQLException e) {
-            MariaDB.logSQLError("Error while getting the friend requests from " + uuid, e);
+            Helper.logError("Error while getting the friend requests from " + uuid, e);
             return Optional.empty();
         }
     }
@@ -285,7 +285,7 @@ public class Friends {
             ResultSet resultSet = stmt.executeQuery();
             return Optional.of(resultSet.next());
         } catch (SQLException e) {
-            MariaDB.logSQLError("Error while getting a friendship", e);
+            Helper.logError("Error while getting a friendship", e);
             return Optional.empty();
         }
     }
