@@ -22,4 +22,35 @@ public class Helper {
 
         return builder.toString();
     }
+    public static ItemStack getIconHead(String texture, String name) {
+        ItemStack item = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+        ItemMeta meta = item.getItemMeta();
+
+        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        byte[] encodedData = Base64.encodeBase64(String.format("{textures:[{Value:\"%s\"}]}}}", texture).getBytes());
+        profile.getProperties().put("textures", new Property("textures", new String(encodedData)));
+
+        Field profileField;
+
+        try {
+            profileField = meta.getClass().getDeclaredField("profile");
+        } catch (NoSuchFieldException | SecurityException e) {
+            logError("Error while getting a icon head", e);
+            return null;
+        }
+
+        profileField.setAccessible(true);
+
+        try {
+            profileField.set(meta, profileField);
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            logError("Error while getting a icon head", e);
+            return null;
+        }
+
+        meta.setDisplayName(name);
+
+        item.setItemMeta(meta);
+        return item;
+    }
 }
