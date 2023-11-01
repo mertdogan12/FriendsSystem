@@ -1,6 +1,11 @@
 package de.mert.friendssystem;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.UUID;
 
@@ -22,35 +27,29 @@ public class Helper {
 
         return builder.toString();
     }
-    public static ItemStack getIconHead(String texture, String name) {
-        ItemStack item = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+
+    public static ItemStack itemBuilder(Material material, String displayName) {
+        ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-
-        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
-        byte[] encodedData = Base64.encodeBase64(String.format("{textures:[{Value:\"%s\"}]}}}", texture).getBytes());
-        profile.getProperties().put("textures", new Property("textures", new String(encodedData)));
-
-        Field profileField;
-
-        try {
-            profileField = meta.getClass().getDeclaredField("profile");
-        } catch (NoSuchFieldException | SecurityException e) {
-            logError("Error while getting a icon head", e);
-            return null;
-        }
-
-        profileField.setAccessible(true);
-
-        try {
-            profileField.set(meta, profileField);
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            logError("Error while getting a icon head", e);
-            return null;
-        }
-
-        meta.setDisplayName(name);
-
+        meta.setDisplayName(displayName);
         item.setItemMeta(meta);
+
         return item;
+    }
+
+    public static ItemStack getPlayerHead(Player player) {
+        ItemStack item  = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+        SkullMeta skull = (SkullMeta) item.getItemMeta();
+        skull.setDisplayName(player.getName());
+        skull.setOwner(player.getName());
+        item.setItemMeta(skull);
+
+        return item;
+    }
+
+    public static void logError(String message, Exception error) {
+        FriendsSystem plugin = FriendsSystem.getPlugin(FriendsSystem.class);
+
+        plugin.getServer().getConsoleSender().sendMessage(FriendsSystem.PREFIX + message + ": " + error);
     }
 }

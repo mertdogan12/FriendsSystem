@@ -1,7 +1,9 @@
 package de.mert.friendssystem.listener;
 
 import de.mert.friendssystem.Friends;
+import de.mert.friendssystem.Helper;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,5 +31,7 @@ public class PlayerJoinListener implements Listener {
                     friend.sendMessage("§7" + p.getName() + " §fjoined the server");
             }
         });
+
+        p.getInventory().setItem(0, Helper.itemBuilder(Material.DIAMOND, "Friends"));
     }
 }

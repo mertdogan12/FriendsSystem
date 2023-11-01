@@ -3,10 +3,12 @@ package de.mert.friendssystem;
 import de.mert.friendssystem.commands.FriendCommand;
 import de.mert.friendssystem.commands.FriendTabCompleter;
 import de.mert.friendssystem.listener.ChatListener;
+import de.mert.friendssystem.listener.PlayerInteractListener;
 import de.mert.friendssystem.listener.PlayerJoinListener;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.ipvp.canvas.MenuFunctionListener;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -49,5 +51,7 @@ public class FriendsSystem extends JavaPlugin {
         // Listeners
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
+        getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
+        getServer().getPluginManager().registerEvents(new MenuFunctionListener(), this);
     }
 }
