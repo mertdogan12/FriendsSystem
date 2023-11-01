@@ -122,7 +122,7 @@ public class Friends {
             Optional<UUID[]> result = Optional.empty();
 
             try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT * FROM friends WHERE player1=? OR player2=?"
+                    "SELECT * FROM friends WHERE player1=? OR player2=? ORDER BY timestamp ASC"
             )) {
                 LinkedList<UUID> out = new LinkedList<>();
 
@@ -257,7 +257,7 @@ public class Friends {
 
     private Optional<UUID[]> getAllFriendRequests() {
         try (Connection conn = source.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                "SELECT * FROM requests WHERE receiver=?"
+                "SELECT * FROM requests WHERE receiver=? ORDER BY timestamp ASC"
         )) {
             LinkedList<UUID> out = new LinkedList<>();
 
