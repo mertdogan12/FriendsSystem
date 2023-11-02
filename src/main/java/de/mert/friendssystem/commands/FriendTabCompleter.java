@@ -23,16 +23,25 @@ public class FriendTabCompleter implements TabCompleter {
         };
 
         if (args.length == 1) {
-            String input = args[0].toLowerCase();
+            String input = args[0];
             return list.stream()
                     .filter(s -> s.toLowerCase().startsWith(input))
                     .sorted()
                     .collect(Collectors.toList());
-        } else
-            return new LinkedList<String>(){
+        } else if (args.length == 2)
+        {
+            String input = args[1];
+            List<String> out = new LinkedList<String>(){
                 {
                     Bukkit.getOnlinePlayers().forEach(player -> add(player.getName()));
                 }
             };
+
+            return out.stream()
+                    .filter(s -> s.toLowerCase().startsWith(input))
+                    .sorted()
+                    .collect(Collectors.toList());
+        } else
+            return new LinkedList<>();
     }
 }
