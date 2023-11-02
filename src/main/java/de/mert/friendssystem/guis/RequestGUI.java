@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class RequestGUI extends MainGUI {
     public RequestGUI(Player player) {
-        super(player, "Friend requests", Helper.itemBuilder(Material.DIAMOND_ORE, "Friends"));
+        super(player, Helper.itemBuilder(Material.IRON_INGOT, "Friends"));
     }
 
     @Override

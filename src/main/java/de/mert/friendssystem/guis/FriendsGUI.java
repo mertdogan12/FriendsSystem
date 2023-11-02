@@ -6,10 +6,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot;
+import org.ipvp.canvas.slot.SlotSettings;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,7 +21,7 @@ import java.util.UUID;
 
 public class FriendsGUI extends MainGUI {
     public FriendsGUI(Player player) {
-        super(player, "Friends", Helper.itemBuilder(Material.GOLD_ORE, "Friend requests"));
+        super(player, Helper.itemBuilder(Material.GOLD_INGOT, "Friend requests"));
     }
 
     public void handleClick(PlayerInteractEvent e) {
@@ -46,24 +49,31 @@ public class FriendsGUI extends MainGUI {
                 return;
             }
 
-            List<String> tmp = new LinkedList<>();
+            ClickOptions options = ClickOptions.builder()
+                    .allow(ClickType.LEFT, ClickType.RIGHT)
+                    .build();
+
+            List<SlotSettings> tmp = new LinkedList<>();
             for (UUID id : result.get()) {
                 OfflinePlayer friend = Bukkit.getOfflinePlayer(id);
 
-                if (friend.isOnline())
-                    for (int i = 0; i < 10; i++) {
-                        builder.addItem(Helper.getPlayerHead(friend.getPlayer()));
-                    }
-                else
-                    tmp.add(friend.getName());
+                Slot.ClickHandler handler = (player, info) -> new ManageFriendGUI(player).open();
+
+                SlotSettings.Builder settingsBuilder = SlotSettings.builder()
+                        .clickOptions(options)
+                        .clickHandler(handler);
+
+                if (friend.isOnline()) {
+                    settingsBuilder.item(Helper.getPlayerHead(friend.getPlayer()));
+                    builder.addItem(settingsBuilder.build());
+                } else {
+                    settingsBuilder.item(Helper.itemBuilder(Material.SKULL_ITEM, friend.getName()));
+                    tmp.add(settingsBuilder.build());
+                }
             }
 
-            for (String name : tmp) {
-                builder.addItem(Helper.itemBuilder(Material.SKULL_ITEM, name));
-            }
-
-            for (int i = 0; i < 50; i++) {
-                builder.addItem(Helper.itemBuilder(Material.SKULL_ITEM, "Placeholder"));
+            for (SlotSettings setting : tmp) {
+                builder.addItem(setting);
             }
 
             openInv();
