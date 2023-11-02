@@ -28,7 +28,7 @@ public class PlayerJoinListener implements Listener {
                 Player friend = Bukkit.getPlayer(id);
 
                 if (friend != null)
-                    friend.sendMessage("§7" + p.getName() + " §fjoined the server");
+                    friend.sendMessage("§7" + p.getName() + " §fis online");
             }
         });
 
