@@ -127,6 +127,9 @@ public class FriendCommand implements CommandExecutor {
                         case SUCCESSFUL_REMOVED_REQ:
                             p.sendMessage("Denied friend request from §7" + args[1]);
                             return;
+                        case SUCCESSFUL_REMOVED_OWN_REQ:
+                            p.sendMessage("§cFriend request has been withdrawn from: §7" + args[1]);
+                            return;
                         case NOT_FRIENDS:
                             p.sendMessage("§7" + args[1] + " §cis not your friend");
                     }

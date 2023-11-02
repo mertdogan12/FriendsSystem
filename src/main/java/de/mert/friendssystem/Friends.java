@@ -29,6 +29,7 @@ public class Friends {
         SUCCESSFUL_SEND,
         SUCCESSFUL_REMOVED,
         SUCCESSFUL_REMOVED_REQ,
+        SUCCESSFUL_REMOVED_OWN_REQ,
         NOT_FRIENDS,
     }
 
@@ -38,7 +39,7 @@ public class Friends {
 
     public void addFriend(UUID friend, final ChangeDataCallback callback) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            // Überprüft ob ihr schon freunde seit
+            // Überprüft ob ihr schon Freunde seit
             Optional<Boolean> isAlreadyAdded = isFriendWith(friend);
             if (!isAlreadyAdded.isPresent()) {
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
@@ -50,7 +51,7 @@ public class Friends {
                 return;
             }
 
-            // wenn req vorhanden ist wird friend geadded
+            // Wenn req vorhanden ist wird friend geadded
             Optional<Boolean> friendRequest = friendRequestExists(friend, uuid);
             if (!friendRequest.isPresent()) {
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
@@ -69,7 +70,7 @@ public class Friends {
                 return;
             }
 
-            // Überprüft ob ihr eine friend req schon gesendet wurde
+            // Überprüft ob schon eine req schon gesendet wurde
             Optional<Boolean> alreadySendReq = friendRequestExists(uuid, friend);
             if (!alreadySendReq.isPresent()) {
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
@@ -81,7 +82,7 @@ public class Friends {
                 return;
             }
 
-            // Sendet friend req
+            // Sendet dir friend req
             if (sendFriendRequest(friend))
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_SEND));
             else
@@ -91,6 +92,7 @@ public class Friends {
 
     public void removeFriend(UUID friend, final ChangeDataCallback callback) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // Entfernt Freund
             Optional<Integer> rmFriend = removeFriend(friend);
             if (!rmFriend.isPresent()) {
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
@@ -102,6 +104,7 @@ public class Friends {
                 return;
             }
 
+            // Entfernt Freundschaftsanfrage wenn ihr keine Freunde seit
             Optional<Integer> rmFriendRequest = removeFriendRequest(friend, uuid);
             if (!rmFriendRequest.isPresent()) {
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
@@ -110,6 +113,18 @@ public class Friends {
 
             if (rmFriendRequest.get() > 0) {
                 Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_REMOVED_REQ));
+                return;
+            }
+
+            // Zieht die eigene Freundschaftsanfrage zurück
+            Optional<Integer> rmSendFriendRequest = removeFriendRequest(uuid, friend);
+            if (!rmSendFriendRequest.isPresent()) {
+                Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.ERROR));
+                return;
+            }
+
+            if (rmSendFriendRequest.get() > 0) {
+                Bukkit.getScheduler().runTask(plugin, () -> callback.onQueryDone(Status.SUCCESSFUL_REMOVED_OWN_REQ));
                 return;
             }
 
