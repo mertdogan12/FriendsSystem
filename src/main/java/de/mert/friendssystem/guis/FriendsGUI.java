@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class FriendsGUI extends MainGUI {
     public FriendsGUI(Player player) {
-        super(player, Helper.itemBuilder(Material.GOLD_INGOT, "Friend requests"), "Friends");
+        super(player, "Friends");
     }
 
     public void handleClick(PlayerInteractEvent e) {
@@ -57,7 +57,7 @@ public class FriendsGUI extends MainGUI {
             for (UUID id : result.get()) {
                 OfflinePlayer friend = Bukkit.getOfflinePlayer(id);
 
-                Slot.ClickHandler handler = (player, info) -> new ManageFriendGUI(player).open();
+                Slot.ClickHandler handler = (player, info) -> new ManageFriendGUI(player, Bukkit.getOfflinePlayer(id)).open();
 
                 SlotSettings.Builder settingsBuilder = SlotSettings.builder()
                         .clickOptions(options)
@@ -81,7 +81,14 @@ public class FriendsGUI extends MainGUI {
     }
 
     @Override
-    protected Slot.ClickHandler switchView() {
-        return (player, info) -> new RequestGUI(player).open();
+    protected void setMenuBar(List<Slot> menuBar) {
+        ClickOptions options = ClickOptions.builder()
+                .allow(ClickType.LEFT, ClickType.RIGHT)
+                .build();
+
+        Slot switchView = menuBar.get(menuBar.size() - 1);
+        switchView.setClickOptions(options);
+        switchView.setClickHandler((player, info) -> new RequestGUI(player).open());
+        switchView.setItem(Helper.itemBuilder(Material.GOLD_INGOT, "Friend requests"));
     }
 }

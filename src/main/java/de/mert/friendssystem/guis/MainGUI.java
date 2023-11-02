@@ -3,13 +3,10 @@ package de.mert.friendssystem.guis;
 import de.mert.friendssystem.Helper;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
 import org.ipvp.canvas.Menu;
 import org.ipvp.canvas.mask.BinaryMask;
 import org.ipvp.canvas.mask.Mask;
 import org.ipvp.canvas.paginate.PaginatedMenuBuilder;
-import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.type.ChestMenu;
 
@@ -19,19 +16,18 @@ public abstract class MainGUI {
     private Mask mask;
     protected PaginatedMenuBuilder builder;
     protected final Player player;
-    private final ItemStack switchViewItem;
     private final String title;
 
-    public MainGUI(Player player, ItemStack switchViewItem, String title) {
+    public MainGUI(Player player, String title) {
         this.player = player;
-        this.switchViewItem = switchViewItem;
         this.title = title;
 
         build();
     }
 
     public abstract void open();
-    protected abstract Slot.ClickHandler switchView();
+
+    protected abstract void setMenuBar(List<Slot> menuBar);
 
     private void build() {
         Menu.Builder<ChestMenu.Builder> pageTemplate = ChestMenu.builder(6)
@@ -54,7 +50,7 @@ public abstract class MainGUI {
                 .previousButtonSlot(9 * 5 + 3);
 
         mask = BinaryMask.builder(pageTemplate.getDimensions())
-                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, ""))
+                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, "", (short) 7))
                 .pattern("000000000")
                 .pattern("000000000")
                 .pattern("000000000")
@@ -66,17 +62,17 @@ public abstract class MainGUI {
     protected void openInv() {
         List<Menu> pages = builder.build();
         for (Menu page : pages) {
-            mask.apply(page);
-
-            Slot slot = page.getSlot(9 * 6 - 1);
-            slot.setItem(switchViewItem);
-
-            ClickOptions options = ClickOptions.builder()
-                    .allow(ClickType.LEFT, ClickType.RIGHT)
+            Mask menuBarmask = BinaryMask.builder(page.getDimensions())
+                    .pattern("000000000")
+                    .pattern("000000000")
+                    .pattern("000000000")
+                    .pattern("000000000")
+                    .pattern("000000000")
+                    .pattern("111111111")
                     .build();
-            slot.setClickOptions(options);
 
-            slot.setClickHandler(switchView());
+            mask.apply(page);
+            setMenuBar(page.getSlots(menuBarmask));
         }
 
         pages.get(0).open(player);

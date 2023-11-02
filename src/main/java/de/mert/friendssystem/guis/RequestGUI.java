@@ -6,6 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot;
 
 import java.util.LinkedList;
@@ -14,7 +16,7 @@ import java.util.UUID;
 
 public class RequestGUI extends MainGUI {
     public RequestGUI(Player player) {
-        super(player, Helper.itemBuilder(Material.IRON_INGOT, "Friends"), "Friend requests");
+        super(player, "Friend requests");
     }
 
     @Override
@@ -44,7 +46,29 @@ public class RequestGUI extends MainGUI {
     }
 
     @Override
-    protected Slot.ClickHandler switchView() {
-        return (player, info) -> new FriendsGUI(player).open();
+    protected void setMenuBar(List<Slot> menuBar) {
+        ClickOptions options = ClickOptions.builder()
+                .allow(ClickType.LEFT, ClickType.RIGHT)
+                .build();
+
+        Slot switchView = menuBar.get(menuBar.size() - 1);
+        switchView.setClickOptions(options);
+        switchView.setClickHandler((player, info) -> new FriendsGUI(player).open());
+        switchView.setItem(Helper.itemBuilder(Material.IRON_INGOT, "Friends"));
+
+        Slot acceptAllReq = menuBar.get(menuBar.size() - 2);
+        acceptAllReq.setClickOptions(options);
+        acceptAllReq.setItem(Helper.itemBuilder(Material.EMERALD, "Accept all requests"));
+        acceptAllReq.setClickHandler((player, info) -> new Friends(player.getUniqueId()).acceptAllRequests(status -> {
+            switch (status) {
+                case ERROR:
+                    player.closeInventory();
+                    player.sendMessage("§cError occurred while accepting your requests");
+                    return;
+
+                case SUCCESSFUL_ADDED:
+                    new RequestGUI(player).open();
+            }
+        }));
     }
 }
