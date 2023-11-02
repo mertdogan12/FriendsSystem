@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot;
+import org.ipvp.canvas.slot.SlotSettings;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -27,18 +28,31 @@ public class RequestGUI extends MainGUI {
                 return;
             }
 
-            List<String> tmp = new LinkedList<>();
+            ClickOptions options = ClickOptions.builder()
+                    .allow(ClickType.LEFT, ClickType.RIGHT)
+                    .build();
+
+            List<SlotSettings> tmp = new LinkedList<>();
             for (UUID id : result.get()) {
                 OfflinePlayer friend = Bukkit.getOfflinePlayer(id);
 
-                if (friend.isOnline())
-                   builder.addItem(Helper.getPlayerHead(friend.getPlayer()));
-                else
-                    tmp.add(friend.getName());
+                Slot.ClickHandler handler = (player, info) -> new AcceptFriendReqGUI(player, friend).open();
+
+                SlotSettings.Builder settingBuilder = SlotSettings.builder()
+                        .clickOptions(options)
+                        .clickHandler(handler);
+
+                if (friend.isOnline()) {
+                    settingBuilder.item(Helper.getPlayerHead(friend.getPlayer()));
+                    builder.addItem(settingBuilder.build());
+                } else {
+                    settingBuilder.item(Helper.itemBuilder(Material.SKULL_ITEM, friend.getName()));
+                    tmp.add(settingBuilder.build());
+                }
             }
 
-            for (String name : tmp) {
-                builder.addItem(Helper.itemBuilder(Material.SKULL_ITEM, name));
+            for (SlotSettings settings: tmp) {
+                builder.addItem(settings);
             }
 
             openInv();
@@ -60,15 +74,11 @@ public class RequestGUI extends MainGUI {
         acceptAllReq.setClickOptions(options);
         acceptAllReq.setItem(Helper.itemBuilder(Material.EMERALD, "Accept all requests"));
         acceptAllReq.setClickHandler((player, info) -> new Friends(player.getUniqueId()).acceptAllRequests(status -> {
-            switch (status) {
-                case ERROR:
-                    player.closeInventory();
-                    player.sendMessage("§cError occurred while accepting your requests");
-                    return;
-
-                case SUCCESSFUL_ADDED:
-                    new RequestGUI(player).open();
-            }
+            if (status == Friends.Status.ERROR) {
+                player.closeInventory();
+                player.sendMessage("§cError occurred while accepting your requests");
+            } else
+                new RequestGUI(player).open();
         }));
     }
 }

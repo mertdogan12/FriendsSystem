@@ -30,7 +30,7 @@ public class ManageFriendGUI {
                 .build();
 
         Mask mask = BinaryMask.builder(menu)
-                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, "", (short) 7))
+                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, " ", (short) 7))
                 .pattern("111111111")
                 .pattern("100000001")
                 .pattern("011111111")

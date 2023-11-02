@@ -50,7 +50,7 @@ public abstract class MainGUI {
                 .previousButtonSlot(9 * 5 + 3);
 
         mask = BinaryMask.builder(pageTemplate.getDimensions())
-                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, "", (short) 7))
+                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, " ", (short) 7))
                 .pattern("000000000")
                 .pattern("000000000")
                 .pattern("000000000")
