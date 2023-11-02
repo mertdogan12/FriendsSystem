@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class FriendsGUI extends MainGUI {
     public FriendsGUI(Player player) {
-        super(player, Helper.itemBuilder(Material.GOLD_INGOT, "Friend requests"));
+        super(player, Helper.itemBuilder(Material.GOLD_INGOT, "Friend requests"), "Friends");
     }
 
     public void handleClick(PlayerInteractEvent e) {

@@ -20,10 +20,12 @@ public abstract class MainGUI {
     protected PaginatedMenuBuilder builder;
     protected final Player player;
     private final ItemStack switchViewItem;
+    private final String title;
 
-    public MainGUI(Player player, ItemStack switchViewItem) {
+    public MainGUI(Player player, ItemStack switchViewItem, String title) {
         this.player = player;
         this.switchViewItem = switchViewItem;
+        this.title = title;
 
         build();
     }
@@ -33,8 +35,8 @@ public abstract class MainGUI {
 
     private void build() {
         Menu.Builder<ChestMenu.Builder> pageTemplate = ChestMenu.builder(6)
-                .title("Friends Menu")
-                .redraw(true);
+                .title(title)
+                .redraw(false);
 
         Mask itemSlots = BinaryMask.builder(pageTemplate.getDimensions())
                 .pattern("111111111")
