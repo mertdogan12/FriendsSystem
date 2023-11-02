@@ -28,8 +28,14 @@ public class Helper {
         return builder.toString();
     }
 
-    public static ItemStack itemBuilder(Material material, String displayName) {
-        ItemStack item = new ItemStack(material);
+    public static ItemStack itemBuilder(Material material, String displayName, short... durability) {
+        ItemStack item;
+
+        if (durability.length == 1)
+            item = new ItemStack(material, 1, durability[0]);
+        else
+            item = new ItemStack(material, 1);
+
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(displayName);
         item.setItemMeta(meta);

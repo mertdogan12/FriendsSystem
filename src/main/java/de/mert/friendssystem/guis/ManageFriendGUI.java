@@ -2,6 +2,7 @@ package de.mert.friendssystem.guis;
 
 import de.mert.friendssystem.Helper;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.ipvp.canvas.Menu;
@@ -13,21 +14,23 @@ import org.ipvp.canvas.type.ChestMenu;
 
 public class ManageFriendGUI {
     public Player player;
+    public OfflinePlayer friend;
     private Menu menu;
 
-    public ManageFriendGUI(Player player) {
+    public ManageFriendGUI(Player player, OfflinePlayer friend) {
         this.player = player;
+        this.friend = friend;
 
         build();
     }
 
     private void build() {
         menu = ChestMenu.builder(3)
-                .title("Friends Menu")
+                .title("Friends Menu: " + friend.getName())
                 .build();
 
         Mask mask = BinaryMask.builder(menu)
-                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, ""))
+                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, "", (short) 7))
                 .pattern("111111111")
                 .pattern("100000001")
                 .pattern("011111111")
@@ -42,7 +45,7 @@ public class ManageFriendGUI {
                 .build();
 
         Slot backButton = menu.getSlot(9 * 2);
-        backButton.setItem(Helper.itemBuilder(Material.STAINED_GLASS_PANE, "Back"));
+        backButton.setItem(Helper.itemBuilder(Material.STAINED_GLASS_PANE, "Back", (short) 14));
         backButton.setClickOptions(options);
         backButton.setClickHandler((player, info) -> new FriendsGUI(player).open());
     }
