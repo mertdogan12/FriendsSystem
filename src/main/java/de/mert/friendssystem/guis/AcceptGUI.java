@@ -17,6 +17,8 @@ public class AcceptGUI {
     private final String title;
     private Slot.ClickHandler acceptHandler = (player, clickInformation) -> {};
     private Slot.ClickHandler denyHandler = (player, clickInformation) -> {};
+    private String acceptText = "Accept";
+    private String denyText = "Deny";
 
     public AcceptGUI(Player player, String title) {
         this.player = player;
@@ -35,6 +37,14 @@ public class AcceptGUI {
 
     public void setDenyHandler(Slot.ClickHandler handler) {
         this.denyHandler = handler;
+    }
+
+    public void setAcceptText(String text) {
+        this.acceptText = text;
+    }
+
+    public void setDenyText(String text) {
+        this.denyText = text;
     }
 
     private void build() {
@@ -57,12 +67,12 @@ public class AcceptGUI {
 
         Slot accept = menu.getSlot(2, 4);
         accept.setClickOptions(options);
-        accept.setItem(Helper.itemBuilder(Material.GOLD_BLOCK, "Accept"));
+        accept.setItem(Helper.itemBuilder(Material.GOLD_BLOCK, acceptText));
         accept.setClickHandler(acceptHandler);
 
         Slot deny = menu.getSlot(2, 6);
         deny.setClickOptions(options);
-        deny.setItem(Helper.itemBuilder(Material.REDSTONE_BLOCK, "Deny"));
+        deny.setItem(Helper.itemBuilder(Material.REDSTONE_BLOCK, denyText));
         deny.setClickHandler(denyHandler);
     }
 }

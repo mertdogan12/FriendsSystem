@@ -38,11 +38,14 @@ public class ManageFriendGUI {
 
         mask.apply(menu);
 
-        menu.getSlot(10).setItem(Helper.itemBuilder(Material.COBBLESTONE, ""));
-
         ClickOptions options = ClickOptions.builder()
                 .allow(ClickType.LEFT, ClickType.RIGHT)
                 .build();
+
+        Slot deleteFriend = menu.getSlot(16);
+        deleteFriend.setItem(Helper.itemBuilder(Material.BARRIER, "Remove friend"));
+        deleteFriend.setClickOptions(options);
+        deleteFriend.setClickHandler((player, info) -> new RemoveFriendGUI(player, friend).open());
 
         Slot backButton = menu.getSlot(9 * 2);
         backButton.setItem(Helper.itemBuilder(Material.STAINED_GLASS_PANE, "Back", (short) 14));
