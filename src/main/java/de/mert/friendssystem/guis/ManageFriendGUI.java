@@ -6,8 +6,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.ipvp.canvas.Menu;
-import org.ipvp.canvas.mask.BinaryMask;
 import org.ipvp.canvas.mask.Mask;
+import org.ipvp.canvas.mask.RecipeMask;
 import org.ipvp.canvas.slot.ClickOptions;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.type.ChestMenu;
@@ -25,15 +25,17 @@ public class ManageFriendGUI {
     }
 
     private void build() {
-        menu = ChestMenu.builder(3)
+        menu = ChestMenu.builder(4)
                 .title("Friends Menu: " + friend.getName())
                 .build();
 
-        Mask mask = BinaryMask.builder(menu)
-                .item(Helper.itemBuilder(Material.STAINED_GLASS_PANE, " ", (short) 7))
-                .pattern("111111111")
-                .pattern("100000001")
-                .pattern("011111111")
+        Mask mask = RecipeMask.builder(menu)
+                .item('l', Helper.itemBuilder(Material.STAINED_GLASS_PANE, " ", (short) 7))
+                .item('d', Helper.itemBuilder(Material.STAINED_GLASS_PANE, " ", (short) 15))
+                .pattern("0dddddddd")
+                .pattern("lllllllll")
+                .pattern("l0000000l")
+                .pattern("lllllllll")
                 .build();
 
         mask.apply(menu);
@@ -42,13 +44,13 @@ public class ManageFriendGUI {
                 .allow(ClickType.LEFT, ClickType.RIGHT)
                 .build();
 
-        Slot deleteFriend = menu.getSlot(16);
-        deleteFriend.setItem(Helper.itemBuilder(Material.BARRIER, "Remove friend"));
+        Slot deleteFriend = menu.getSlot(3, 8);
+        deleteFriend.setItem(Helper.itemBuilder(Material.BARRIER, "§cRemove friend"));
         deleteFriend.setClickOptions(options);
         deleteFriend.setClickHandler((player, info) -> new RemoveFriendGUI(player, friend).open());
 
-        Slot backButton = menu.getSlot(9 * 2);
-        backButton.setItem(Helper.itemBuilder(Material.STAINED_GLASS_PANE, "Back", (short) 14));
+        Slot backButton = menu.getSlot(0);
+        backButton.setItem(Helper.itemBuilder(Material.REDSTONE, "§4> Back <"));
         backButton.setClickOptions(options);
         backButton.setClickHandler((player, info) -> new FriendsGUI(player).open());
     }

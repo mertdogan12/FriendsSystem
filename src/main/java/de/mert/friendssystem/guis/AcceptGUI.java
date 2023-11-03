@@ -17,8 +17,8 @@ public class AcceptGUI {
     private final String title;
     private Slot.ClickHandler acceptHandler = (player, clickInformation) -> {};
     private Slot.ClickHandler denyHandler = (player, clickInformation) -> {};
-    private String acceptText = "Accept";
-    private String denyText = "Deny";
+    private String acceptText = "§6Accept";
+    private String denyText = "§cDeny";
 
     public AcceptGUI(Player player, String title) {
         this.player = player;
